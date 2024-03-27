@@ -18,6 +18,8 @@ jobs:
   build:
     needs: test
     runs-on: ubuntu-latest
+    outputs:
+      built-file-name: ${{ steps.capture_file.outputs.file_name }}
     steps:
       - name: Get code
         uses: actions/checkout@v3
@@ -25,6 +27,10 @@ jobs:
         run: npm ci
       - name: Build website
         run: npm run build
+      - name: Capture built file name
+        id: capture_file
+        #run: echo "::set-output name=file_name::$(find dist -name 'index.*.js' -exec basename {} \;)"
+        run: echo "::set-output name=file_name::$(find dist -name 'index.*.js' -exec basename {} \;)"
       - name: Archive artifacts
         uses: actions/upload-artifact@v2
         with:
@@ -39,5 +45,5 @@ jobs:
         with:
           name: dist-files  # Specify the name of the artifact to download
           path: dist
-      - name: Deploy
-        run: echo "Deploying..."
+      - name: Output filename
+        run: echo "{{ needs.build.outputs.built-file-name }}"
